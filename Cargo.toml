@@ -1,0 +1,23 @@
+[package]
+name = "drv_map"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+goblin = "0.10.7"
+scroll = "0.13.0"
+superfetch = "0.1.1"
+
+[dependencies.windows-sys]
+version = "0.61.2"
+features = [
+    "Win32_System_IO",
+    "Win32_Storage_FileSystem",
+    "Win32_Security",
+    "Win32_System_Memory",
+    "Win32_System_LibraryLoader",
+    "Win32_System_Threading",
+    "Wdk_System_SystemInformation",
+    "Wdk_Foundation",
+    "Wdk_Storage_FileSystem"
+]

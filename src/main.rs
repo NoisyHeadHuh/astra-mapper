@@ -41,7 +41,7 @@ fn main() {
         .windows_fields
         .size_of_image as usize;
 
-    let mut driver_fixed = vec![0x41u8; size_of_image];
+    let mut driver_fixed = vec![0x0u8; size_of_image];
 
     driver_object
         .header
@@ -57,10 +57,11 @@ fn main() {
             .copy_from_slice(&driver_bytes[raw_data..raw_data + size_raw_data]);
         unsafe {
             println!(
-                "{} at vaddr: {:X} raw: {:X}",
+                "{} at vaddr: {:X} raw: {:X} vsize: {:X}",
                 std::str::from_utf8_unchecked(&sec.name),
                 vaddr,
-                raw_data
+                raw_data,
+                virtual_size
             );
         }
     }
@@ -103,23 +104,32 @@ fn main() {
 
                     driver_fixed[target_rva..target_rva + 8]
                         .copy_from_slice(&new_value.to_le_bytes());
-
-                    println!("Solved something");
                 }
             }
         }
     }
 
     println!("Driver alloc {:X}", driver_base);
+
     for s in &driver_object.sections {
-        let driver_slice = map_virtual_address(
-            &mm,
-            driver_base + s.virtual_address as u64,
-            s.virtual_size as usize,
-        );
-        let va = s.virtual_address as usize;
-        driver_slice.copy_from_slice(&driver_fixed[va..va + s.virtual_size as usize]);
+        for offset in (0x0..s.virtual_size).step_by(0x1000) {
+            let amount = (s.virtual_size - offset).min(0x1000);
+            let map_address = driver_base + s.virtual_address as u64 + offset as u64;
+            let driver_slice = map_virtual_address(&mm, map_address, amount as usize);
+            println!(
+                "[{}] Mapping from {:X} to {:X}",
+                s.name().unwrap(),
+                map_address,
+                map_address + amount as u64
+            );
+            let va = s.virtual_address as usize + offset as usize;
+            driver_slice.copy_from_slice(&driver_fixed[va..va + amount as usize])
+        }
     }
+
+    //for chunk in driver_fixed[0x1000..].chunks(0x1000) {
+    //    println!("{:X}", chunk.len())
+    //}
 
     let ep = driver_base
         + driver_object

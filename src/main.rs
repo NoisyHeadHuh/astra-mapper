@@ -26,11 +26,15 @@ fn map_virtual_address(mm: &MemoryMap, address: u64, size: usize) -> &'static mu
 fn main() {
     let mut kernel = ntoskrnl::Kernel::new();
 
-    let driver_bytes = std::fs::read("hello_world_driver.dll").unwrap();
+    let driver_name = std::env::args().nth(1).unwrap_or_else(|| {
+        panic!("Usage: drv_map <target-driver>");
+    });
+
+    let driver_bytes = std::fs::read(driver_name).unwrap();
     let driver_object = match goblin::Object::parse(&driver_bytes).unwrap() {
         goblin::Object::PE(pe) => pe,
         _ => {
-            panic!("driver is not a PE")
+            panic!("Not valid PE")
         }
     };
 

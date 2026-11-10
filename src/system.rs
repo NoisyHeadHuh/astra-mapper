@@ -71,6 +71,6 @@ pub fn get_kernel_module_address<S: AsRef<str>>(module_name: S) -> Option<Vaddr>
 pub fn translate_v2p(mm: &MemoryMap, vaddr: Vaddr) -> Paddr {
     match mm.translate(vaddr as _) {
         Ok(addr) => addr as Paddr,
-        Err(e) => panic!("Failed to translate vaddr to paddr"),
+        Err(_) => panic!("Failed to translate vaddr to paddr"),
     }
 }

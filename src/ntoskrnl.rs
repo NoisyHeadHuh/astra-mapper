@@ -37,7 +37,7 @@ impl Kernel {
                 .expect("Failed to get ntoskrnl address");
             let mm = match MemoryMap::snapshot() {
                 Ok(m) => m,
-                Err(e) => panic!("Failed to take memorymap snapshot"),
+                Err(_) => panic!("Failed to take memorymap snapshot"),
             };
             let ntoskrnl_page_paddr = translate_v2p(&mm, ntoskrnl_vaddr & !0xFFF);
             println!("[+] ntoskrnl paddr: {:X}", ntoskrnl_page_paddr);
